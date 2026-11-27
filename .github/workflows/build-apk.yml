@@ -1,0 +1,43 @@
+name: Build Banca APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ principal ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extrair projeto
+        run: |
+          unzip -q ProjetoBanca_0_4_7_corrigido\(3\).zip -d projeto
+          find projeto -name settings.gradle.kts -o -name settings.gradle
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Compilar
+        run: |
+          cd projeto
+          PROJECT=$(find . -name settings.gradle.kts -o -name settings.gradle | head -1)
+          cd "$(dirname "$PROJECT")"
+          gradle wrapper --gradle-version 8.9
+          chmod +x gradlew
+          ./gradlew test assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Banca-APK
+          path: projeto/**/app/build/outputs/apk/**/*.apk
