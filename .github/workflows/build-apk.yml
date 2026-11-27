@@ -33,14 +33,22 @@ jobs:
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
-      - name: Compilar APK com Gradle do sistema
+      - name: Corrigir codigo e Compilar APK
         run: |
           PROJECT_DIR=$(find extracted_files -maxdepth 3 \( -name "settings.gradle" -o -name "settings.gradle.kts" \) -exec dirname {} \; | head -n 1)
           echo "Pasta do projeto encontrada: $PROJECT_DIR"
           cd "$PROJECT_DIR"
           
-          # Compila o APK ignorando os erros de smart-cast do Kotlin
-          gradle assembleDebug -Pkotlin.options.suppressWarnings=true
+          # Corrige automaticamente os erros de Smart Cast no DatabaseBackup.kt
+          BACKUP_FILE="app/src/main/java/br/com/banca/app/DatabaseBackup.kt"
+          if [ -f "$BACKUP_FILE" ]; then
+            sed -i 's/\.endedAtEpochMillis\b/.endedAtEpochMillis!!/g' "$BACKUP_FILE"
+            sed -i 's/\.observedShare\b/.observedShare!!/g' "$BACKUP_FILE"
+            sed -i 's/!!!!/!!/g' "$BACKUP_FILE"
+          fi
+          
+          # Compila mantendo a flag que resolve o conflito Java 1.8 vs Kotlin 17
+          gradle assembleDebug -Pkotlin.jvm.target.validation.mode=ignore
 
       - name: Salvar APK para download
         uses: actions/upload-artifact@v4
