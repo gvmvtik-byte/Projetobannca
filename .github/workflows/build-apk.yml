@@ -15,7 +15,6 @@ jobs:
       - name: Descompactar projeto
         run: |
           unzip -o "ProjetoBanca_0_4_7_corrigido(3).zip" -d extracted_files
-          find extracted_files -maxdepth 3
 
       - name: Configurar Java 17
         uses: actions/setup-java@v4
@@ -39,6 +38,23 @@ jobs:
           PROJECT_DIR=$(find extracted_files -maxdepth 3 \( -name "settings.gradle" -o -name "settings.gradle.kts" \) -exec dirname {} \; | head -n 1)
           echo "Pasta do projeto encontrada: $PROJECT_DIR"
           cd "$PROJECT_DIR"
+          
+          # Injeta configuracao global para alinhar Java 17 e Kotlin 17 em todos os modulos
+          cat << 'EOF' >> build.gradle.kts
+
+          subprojects {
+              tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+                  kotlinOptions {
+                      jvmTarget = "17"
+                  }
+              }
+              tasks.withType<JavaCompile>().configureEach {
+                  sourceCompatibility = "17"
+                  targetCompatibility = "17"
+              }
+          }
+          EOF
+          
           gradle assembleDebug
 
       - name: Salvar APK para download
