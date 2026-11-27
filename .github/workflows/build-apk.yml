@@ -14,10 +14,8 @@ jobs:
 
       - name: Descompactar projeto
         run: |
-          unzip -o "ProjetoBanca_0_4_7_corrigido(3).zip" -d temp_folder
-          # Move tudo de dentro da pasta extraída para a raiz principal
-          cp -r temp_folder/ProjetoBanca/* .
-          cp -r temp_folder/ProjetoBanca/.* . 2>/dev/null || true
+          unzip -o "ProjetoBanca_0_4_7_corrigido(3).zip" -d extracted_files
+          ls -la extracted_files
 
       - name: Configurar Java 17
         uses: actions/setup-java@v4
@@ -37,6 +35,7 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
       - name: Dar permissao e Compilar APK
+        working-directory: ./extracted_files/ProjetoBanca
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug
@@ -45,4 +44,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ProjetoBanca-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: extracted_files/ProjetoBanca/app/build/outputs/apk/debug/app-debug.apk
