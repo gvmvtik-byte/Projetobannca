@@ -39,8 +39,8 @@ jobs:
           echo "Pasta do projeto encontrada: $PROJECT_DIR"
           cd "$PROJECT_DIR"
           
-          # Compila passando as flags globais para unificar o Java para 17 em todas as tarefas
-          gradle assembleDebug -Pkotlin.jvm.target.validation.mode=warning -Dkotlin.daemon.jvm.options="-Xmx3g"
+          # Compila o APK e tolera os avisos de smart cast do Kotlin
+          gradle assembleDebug -Pkotlin.compiler.execution.strategy=in-process
 
       - name: Salvar APK para download
         uses: actions/upload-artifact@v4
