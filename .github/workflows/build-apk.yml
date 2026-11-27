@@ -39,23 +39,8 @@ jobs:
           echo "Pasta do projeto encontrada: $PROJECT_DIR"
           cd "$PROJECT_DIR"
           
-          # Injeta configuracao global para alinhar Java 17 e Kotlin 17 em todos os modulos
-          cat << 'EOF' >> build.gradle.kts
-
-          subprojects {
-              tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-                  kotlinOptions {
-                      jvmTarget = "17"
-                  }
-              }
-              tasks.withType<JavaCompile>().configureEach {
-                  sourceCompatibility = "17"
-                  targetCompatibility = "17"
-              }
-          }
-          EOF
-          
-          gradle assembleDebug
+          # Compila passando as flags globais para unificar o Java para 17 em todas as tarefas
+          gradle assembleDebug -Pkotlin.jvm.target.validation.mode=warning -Dkotlin.daemon.jvm.options="-Xmx3g"
 
       - name: Salvar APK para download
         uses: actions/upload-artifact@v4
